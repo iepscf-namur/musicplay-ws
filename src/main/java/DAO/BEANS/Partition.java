@@ -1,4 +1,4 @@
-package beans;
+package DAO.BEANS;
 
 import java.util.Date;
 

@@ -1,4 +1,4 @@
-package beans;
+package DAO.BEANS;
 
 public class Strophe {
     private int id;
