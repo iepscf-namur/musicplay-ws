@@ -1,3 +1,5 @@
+package DAO;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -22,7 +24,7 @@ public class DAOFactory {
 
         }
 
-        DAOFactory instance = new DAOFactory("jdbc:mysql://localhost:8081", "root", "");
+        DAOFactory instance = new DAOFactory("jdbc:mysql://localhost:8081", "root", "1234");
         return instance;
     }
 

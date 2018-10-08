@@ -1,3 +1,6 @@
+package DAO;
+
+import DAO.BEANS.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -16,10 +19,10 @@ public class UserDAOImpl implements UserDAO {
 
         try{
             connexion = daoFactory.getConnection();
-            preparedStatement = connexion.prepareStatement("INSERT INTO User(UserLogin, UserPassword, UserSalt) VALUES (?,?,?);");
-            preparedStatement.setString(1, user.getUserLogin());
-            preparedStatement.setString(1, user.getUserPassword());
-            preparedStatement.setString(1, user.getUserSalt());
+            preparedStatement = connexion.prepareStatement("INSERT INTO User(Login, Password, Salt) VALUES (?,?,?);");
+            preparedStatement.setString(1, user.getLogin());
+            preparedStatement.setString(1, user.getPassword());
+            preparedStatement.setString(1, user.getSalt());
 
             preparedStatement.executeUpdate();
         }catch(SQLException e)

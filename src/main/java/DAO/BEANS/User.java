@@ -4,6 +4,7 @@ public class User {
     private int Id;
     private String Login;
     private String Password;
+    private String Salt;
 
     public User(int id, String login, String password) {
         Id = id;
@@ -33,5 +34,13 @@ public class User {
 
     public void setPassword(String password) {
         Password = password;
+    }
+
+    public String getSalt() {
+        return Salt;
+    }
+
+    public void setSalt(String salt) {
+        Salt = salt;
     }
 }
