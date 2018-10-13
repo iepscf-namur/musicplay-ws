@@ -1,4 +1,4 @@
-package servlets;
+package WS.servlets;
 
 import com.google.gson.JsonObject;
 
