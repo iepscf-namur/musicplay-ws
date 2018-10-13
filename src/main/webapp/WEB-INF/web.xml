@@ -7,7 +7,7 @@
   <display-name>Archetype Created Web Application</display-name>
     <servlet>
         <servlet-name>Partition</servlet-name>
-        <servlet-class>WS.servlets.Partition</servlet-class>
+        <servlet-class>WS.servlets.PartitionController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Partition</servlet-name>
