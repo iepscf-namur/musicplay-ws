@@ -6,9 +6,6 @@ public class User {
     private String Password;
     private String Salt;
 
-    public User() {
-    }
-
     public int getId() {
         return Id;
     }
