@@ -6,10 +6,7 @@ public class User {
     private String Password;
     private String Salt;
 
-    public User(int id, String login, String password) {
-        Id = id;
-        Login = login;
-        Password = password;
+    public User() {
     }
 
     public int getId() {
