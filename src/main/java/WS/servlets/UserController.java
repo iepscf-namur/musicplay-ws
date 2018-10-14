@@ -2,15 +2,14 @@ package WS.servlets;
 
 import WS.errors.JsonErrorBuilder;
 import WS.services.UserServiceImpl;
+import WS.utils.ServletUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 
 public class UserController extends HttpServlet {
@@ -18,7 +17,7 @@ public class UserController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // Set Content-Type and CharacterEncoding in Header
-        setResponseSettings(response);
+        ServletUtils.setResponseSettings(response);
 
         JsonObject jsonResponse = null;
 
@@ -34,7 +33,7 @@ public class UserController extends HttpServlet {
 
         // Else read the body content and send it to UserService for creation
         try {
-            JsonObject user = readBody(request);
+            JsonObject user = ServletUtils.readBody(request);
             if(user == null) {
                 jsonResponse = JsonErrorBuilder.getJsonObject(400, "body must contain a json string");
                 response.setStatus(jsonResponse.get("code").getAsInt());
@@ -63,7 +62,7 @@ public class UserController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // Set Content-Type and CharacterEncoding in Header
-        setResponseSettings(response);
+        ServletUtils.setResponseSettings(response);
 
         // If request URL is /users or /users/
         if(request.getPathInfo() == null || request.getPathInfo().equals("/")) {
@@ -109,7 +108,7 @@ public class UserController extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // Set Content-Type and CharacterEncoding in Header
-        setResponseSettings(response);
+        ServletUtils.setResponseSettings(response);
 
         // If request URL is not /users{id} starting from 1 to ...
         if (request.getPathInfo() == null || !request.getPathInfo().substring(1).matches("[1-9][0-9]*")) {
@@ -128,7 +127,7 @@ public class UserController extends HttpServlet {
         String id = request.getPathInfo().substring(1);
         try {
             int userId = Integer.parseInt(id);
-            JsonObject user = readBody(request);
+            JsonObject user = ServletUtils.readBody(request);
             if(user == null) {
                 jsonResponse = JsonErrorBuilder.getJsonObject(400, "body must contain a json string");
                 response.setStatus(jsonResponse.get("code").getAsInt());
@@ -151,7 +150,7 @@ public class UserController extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // Set Content-Type and CharacterEncoding in Header
-        setResponseSettings(response);
+        ServletUtils.setResponseSettings(response);
 
         // If request URL is not /users{id} starting from 1 to ...
         if (request.getPathInfo() == null || !request.getPathInfo().substring(1).matches("[1-9][0-9]*")) {
@@ -177,31 +176,5 @@ public class UserController extends HttpServlet {
 
         response.setStatus(jsonResponse.get("code").getAsInt());
         response.getWriter().write(jsonResponse.toString());
-    }
-
-    private void setResponseSettings(HttpServletResponse response) {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-    }
-
-    private JsonObject readBody(HttpServletRequest request) throws Exception {
-
-        StringBuilder buffer = new StringBuilder(640);
-        String line;
-        JsonObject jsonInput = null;
-        try {
-            BufferedReader reader = request.getReader();
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
-            if(buffer.length() != 0) {
-                JsonParser jsonParser = new JsonParser();
-                jsonInput = (JsonObject)jsonParser.parse(buffer.toString());
-            }
-        } catch( Exception e) {
-            throw e;
-        }
-
-        return jsonInput;
     }
 }

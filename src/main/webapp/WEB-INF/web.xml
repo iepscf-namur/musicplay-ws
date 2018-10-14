@@ -35,5 +35,14 @@
         <url-pattern>/users/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>UserAccountController</servlet-name>
+        <servlet-class>WS.servlets.UserAccountController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserAccountController</servlet-name>
+        <url-pattern>/account/*</url-pattern>
+    </servlet-mapping>
+
 
 </web-app>

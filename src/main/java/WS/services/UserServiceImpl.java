@@ -37,12 +37,6 @@ public class UserServiceImpl implements IUserService {
             jsonObj.addProperty("password", user.getPassword());
             jsonObj.addProperty("salt", user.getSalt());
         }
-        /*
-        else {
-
-            jsonObj = JsonErrorBuilder.getJsonObject(404, "user not found");
-        }
-        */
 
         return jsonObj;
     }
@@ -74,13 +68,13 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public JsonObject updateUserJson(JsonObject jsonObject) {
-        //int userId = jsonObject.get("id").getAsInt();
+
         JsonObject jsonResponse = null;
         DAOFactory daoFactory = DAOFactory.getInstance();
         UserDAO userDAO = daoFactory.getUserDAO();
         User user = userDAO.GetUser(jsonObject.get("id").getAsInt());
-        if(user != null) {
-            // FIXME Send message if field provided does not exist
+        if(jsonObject != null && user != null) {
+            // TODO Send message if field provided does not exist ?
             if(jsonObject.has("login")) {
                 user.setLogin(EscapeUtils.html2text(jsonObject.get("login").getAsString()));
             }
@@ -114,6 +108,7 @@ public class UserServiceImpl implements IUserService {
         if(user != null) {
             int nbRowsAffected = userDAO.DeleteUser(user.getId());
             if(nbRowsAffected > 0) {
+                // FIXME rename or extends JsonBuilder so we do not use "error" here
                 jsonResponse = JsonErrorBuilder.getJsonObject(200, "User deleted");
             }
         } else {
@@ -149,7 +144,8 @@ public class UserServiceImpl implements IUserService {
 
 
     private boolean isValid(JsonObject jsonObj) {
-        return jsonObj.has("login") &&
+        return  jsonObj != null &&
+                jsonObj.has("login") &&
                 jsonObj.has("password") &&
                 jsonObj.has("salt");
     }
