@@ -5,6 +5,17 @@
          version="3.0">
 
   <display-name>Archetype Created Web Application</display-name>
+    <!--
+    <servlet>
+        <servlet-name>TestController</servlet-name>
+        <servlet-class>WS.servlets.TestController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestController</servlet-name>
+        <url-pattern>/test/*</url-pattern>
+    </servlet-mapping>
+    -->
+    <!--
     <servlet>
         <servlet-name>Partition</servlet-name>
         <servlet-class>WS.servlets.PartitionController</servlet-class>
@@ -13,4 +24,16 @@
         <servlet-name>Partition</servlet-name>
         <url-pattern>/partitions/*</url-pattern>
     </servlet-mapping>
+    -->
+
+    <servlet>
+        <servlet-name>UserController</servlet-name>
+        <servlet-class>WS.servlets.UserController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserController</servlet-name>
+        <url-pattern>/users/*</url-pattern>
+    </servlet-mapping>
+
+
 </web-app>

@@ -8,6 +8,10 @@
 </head>
 <body>
     <h1>MusicPlay Web Services</h1>
-    <p>GET /partitions => <a href="/partitions">Servlet Partition</a></p>
+    <p>POST /users => <a href="/users">Requires JSON body with user login, password, salt fields</a></p>
+    <p>GET /users => <a href="/users">Retrieves all users and returns a Json Array string</a></p>
+    <p>GET /users/{id} => <a href="/users/1">Retrieves the requested user as a Json String</a></p>
+    <p>PUT /users/{id} => <a href="/users/1">Update the user specified, requires a JSON body with the field or fields to be updated</a></p>
+    <p>DELETE /users/{id} => <a href="/users/1">Deletes the requested user</a></p>
 </body>
 </html>
