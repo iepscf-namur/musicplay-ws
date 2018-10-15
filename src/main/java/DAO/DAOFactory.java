@@ -10,7 +10,7 @@ public class DAOFactory {
     private String password;
 
     DAOFactory(String url, String username, String password){
-        this.url = url;
+        this.url = url + "?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC";
         this.username = username;
         this.password = password;
     }
@@ -24,7 +24,7 @@ public class DAOFactory {
 
         }
 
-        DAOFactory instance = new DAOFactory("jdbc:mysql://localhost:8081", "root", "1234");
+        DAOFactory instance = new DAOFactory("jdbc:mysql://localhost:3306/musicplaydb", "root", "");
         return instance;
     }
 

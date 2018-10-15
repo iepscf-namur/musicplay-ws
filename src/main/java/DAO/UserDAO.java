@@ -5,9 +5,10 @@ import DAO.BEANS.User;
 import java.util.List;
 
 public interface UserDAO {
-    void AddUser(User user);
-    void UpdateUser(User user);
-    void DeleteUser(int id);
+    int AddUser(User user);
+    int UpdateUser(User user);
+    int DeleteUser(int id);
     User GetUser(int id);
+    User GetUser(String login);
     List<User> GetUsers();
 }
