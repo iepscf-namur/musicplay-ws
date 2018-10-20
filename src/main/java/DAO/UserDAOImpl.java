@@ -14,7 +14,6 @@ public class UserDAOImpl implements UserDAO {
     private static final String FIND_BY_ID = "SELECT * FROM user WHERE id=?";
     private static final String FIND_BY_LOGIN = "SELECT * FROM user WHERE login=?";
     private static final String FIND_ALL = "SELECT * FROM user ORDER BY id";
-    //private static final String INSERT = "INSERT INTO user (IdUser, UserLogin, lastName, UserPassword, UserSalt) VALUES (NULL, ?, ?, ?)";
     private static final String INSERT = "INSERT INTO user (id, login, password, salt) VALUES (NULL, ?, ?, ?)";
     private static final String UPDATE = "UPDATE user SET login=?, password=?, salt=? WHERE id=?";
 
