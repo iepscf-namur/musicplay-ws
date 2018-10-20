@@ -17,5 +17,19 @@
 
     <h3>/account</h3>
     <p>POST /account/login => <a href="/account/login">Check credentials (login + password in body)</a></p>
+
+    <h3>/roles</h3>
+    <p>POST /roles => <a href="/roles">Requires JSON body with a name field. Create the role if the name is not already in use.</a></p>
+    <p>GET /roles => <a href="/roles">Retrieves all roles and returns a Json Array string</a></p>
+    <p>GET /roles/{id} => <a href="/roles/1">Retrieves the requested role as a Json String</a></p>
+    <p>PUT /roles/{id} => <a href="/roles/1">Update the role specified, requires a JSON body with the field (name) to be updated</a></p>
+    <p>DELETE /roles/{id} => <a href="/roles/1">Deletes the requested role if it is not assigned to users</a></p>
+
+    <h3>/authors</h3>
+    <p>POST /authors => <a href="/authors">Requires JSON body with a name field. Create the author if the name is not already in use.</a></p>
+    <p>GET /authors => <a href="/authors">Retrieves all authors and returns a Json Array string</a></p>
+    <p>GET /authors/{id} => <a href="/authors/1">Retrieves the requested author as a Json String</a></p>
+    <p>PUT /authors/{id} => <a href="/authors/1">Update the author specified, requires a JSON body with the field (name) to be updated</a></p>
+    <p>DELETE /authors/{id} => <a href="/authors/1">Deletes the requested author if it is not assigned to a partition (to do)</a></p>
 </body>
 </html>

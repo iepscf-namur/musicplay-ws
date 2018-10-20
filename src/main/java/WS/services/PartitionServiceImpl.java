@@ -1,59 +1,438 @@
 package WS.services;
 
-import DAO.DAOFactory;
-import DAO.UserDAO;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.sql.Connection;
-import java.util.Map;
+import DAO.*;
+import DAO.BEANS.*;
+import WS.errors.JsonErrorBuilder;
+import WS.utils.EscapeUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import java.util.*;
 
 public class PartitionServiceImpl implements IPartitionService {
 
-    private final int MAX_REQUEST_SZ = 50;
+    private final boolean DEFAULT_USER_VALIDATION = false;
+    private final boolean DEFAULT_MODERATOR_VALIDATION = false;
+    private final String DEFAULT_IMAGE = "defaultPartition.png";
 
-    /**
-     * GET /partitions?start=0&size=MAX_REQUEST_SZ, returns JSON array
-     * QueryParams accepted in params
-     *      start, int
-     *      size, int
-     *      order, map<field, 'ASC' or 'DESC'>
-     *
-     * @return a Json array string
-     * @throws Exception
-     */
-    public String getPartitionsJson() throws Exception {
+    private static PartitionServiceImpl _instance = null;
 
+    private PartitionServiceImpl() {}
 
+    public static PartitionServiceImpl getPartitionServiceImpl() {
+        if(PartitionServiceImpl._instance == null) {
+            PartitionServiceImpl._instance = new PartitionServiceImpl();
+        }
+
+        return PartitionServiceImpl._instance;
+    }
+
+    @Override
+    public JsonObject getPartitionJson(int id) {
+
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        IPartitionDAO partitionDAO = daoFactory.getPartitionDAO();
+        JsonObject jsonObj = null;
+
+        Partition partition = partitionDAO.GetPartition(id);
+        if(partition != null) {
+            jsonObj = new JsonObject();
+            jsonObj.addProperty("id", partition.getId());
+            jsonObj.addProperty("title", partition.getTitle());
+            jsonObj.addProperty("urlImage", partition.getUrlImage());
+            jsonObj.addProperty("creator", partition.getCreator().getLogin());
+            jsonObj.addProperty("author", partition.getAuthor().getName());
+            jsonObj.addProperty("userValidation", partition.isUserValidation());
+            jsonObj.addProperty("moderatorValidation", partition.isModeratorValidation());
+            jsonObj.addProperty("creationDate", partition.getCreationDate().toString());
+            jsonObj.addProperty("modificationDate", partition.getModificationDate().toString());
+
+            List<Strophe> strophes = partition.getStrophes();
+            JsonArray jsonStrophes = new JsonArray();
+            for(Strophe strophe : strophes) {
+                JsonObject jsonStrophe = new JsonObject();
+                jsonStrophe.addProperty("position", strophe.getPosition());
+                List<Ligne> lignes = strophe.getLignes();
+                JsonArray jsonLignes = new JsonArray();
+                for(Ligne ligne : lignes) {
+                    JsonObject jsonLigne = new JsonObject();
+                    jsonLigne.addProperty("id", ligne.getId());
+                    jsonLigne.addProperty("accord", ligne.getAccord());
+                    jsonLigne.addProperty("text", ligne.getText());
+                    jsonLigne.addProperty("position", ligne.getPosition());
+                    jsonLignes.add(jsonLigne);
+                }
+                jsonStrophe.add("lignes", jsonLignes);
+                jsonStrophes.add(jsonStrophe);
+            }
+
+            jsonObj.add("strophes", jsonStrophes);
+        }
+
+        return jsonObj;
+    }
+
+    @Override
+    public JsonArray getPartitionsJson() {
+
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        IPartitionDAO partitionDAO = daoFactory.getPartitionDAO();
+        List<Partition> partitions = partitionDAO.GetPartitions();
+
+        JsonArray partitionsJsonArray = new JsonArray();
+
+        for(Partition partition : partitions) {
+            partitionsJsonArray.add(getPartitionJson(partition.getId()));
+        }
+
+        return partitionsJsonArray;
+    }
+
+    @Override
+    public JsonArray getPartitionsByAuthorJson(JsonObject author) {
         return null;
     }
 
-    /**
-     *
-     * @return an XML string
-     * @throws Exception
-     */
-    public String getPartitionsXml() throws Exception {
-        throw new NotImplementedException();
-    }
-
-    /**
-     *
-     * @param params
-     * @return a Json array string
-     * @throws Exception
-     */
-    public String getPartitionsJson(Map<String, String> params) throws Exception {
+    @Override
+    public JsonArray getPartitionsByCreatorJson(JsonObject creator) {
         return null;
     }
 
-    /**
-     * GET /partitions?start={int}&size={int}
-     * @param params
-     * @return an XML string
-     * @throws Exception
-     */
-    public String getPartitionsXml(Map<String, String> params) throws Exception {
-        throw new NotImplementedException();
+    @Override
+    public JsonObject updatePartitionJson(JsonObject jsonObject) {
+
+        JsonObject jsonResponse = null;
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        IPartitionDAO partitionDAO = daoFactory.getPartitionDAO();
+
+        Partition partition = partitionDAO.GetPartition(jsonObject.get("id").getAsInt());
+        if(jsonObject != null && partition != null) {
+            // TODO Send message if field provided does not exist ?
+            if(jsonObject.has("title")) {
+                partition.setTitle(EscapeUtils.html2text(jsonObject.get("title").getAsString()));
+            }
+
+            if(jsonObject.has("urlImage")) {
+                //partition.setUrlImage(EscapeUtils.html2text(jsonObject.get("urlImage").getAsString()));
+                partition.setUrlImage(jsonObject.get("urlImage").getAsString());
+            }
+
+            if(jsonObject.has("userValidation")) {
+                /*
+                if(jsonObject.get("userValidation").getAsString().equals("true") ||
+                        jsonObject.get("userValidation").getAsString().equals("false")) {
+                    partition.setUserValidation(jsonObject.get("userValidation").getAsBoolean());
+                } else {
+                    return JsonErrorBuilder.getJsonObject(400, "userValidation must be true or false");
+                }
+                */
+                partition.setUserValidation(Boolean.parseBoolean(jsonObject.get("userValidation").getAsString()));
+            }
+
+            if(jsonObject.has("moderatorValidation")) {
+                /*
+                if(jsonObject.get("moderatorValidation").getAsString().equals("true") ||
+                        jsonObject.get("moderatorValidation").getAsString().equals("false")) {
+                    partition.setModeratorValidation(jsonObject.get("moderatorValidation").getAsBoolean());
+                } else {
+                    return JsonErrorBuilder.getJsonObject(400, "moderatorValidation must be true or false");
+                }
+                */
+
+                partition.setModeratorValidation(Boolean.parseBoolean(jsonObject.get("moderatorValidation").getAsString()));
+            }
+
+            if(jsonObject.has("strophes")) {
+
+                if(!jsonObject.get("strophes").isJsonArray()) {
+                    return JsonErrorBuilder.getJsonObject(400, "strophes must be an array");
+                }
+
+                JsonArray strophesJson = jsonObject.getAsJsonArray("strophes");
+                IStropheDAO stropheDAO = daoFactory.getStropheDAO();
+                ILigneDAO ligneDAO = daoFactory.getLigneDAO();
+                JsonArray lignesJson = null;
+
+                for(JsonElement stropheJson : strophesJson) {
+                    if(((JsonObject)stropheJson).has("position")) {
+                        try {
+                            Integer.parseInt(((JsonObject)stropheJson).get("position").getAsString());
+                        } catch(NumberFormatException e) {
+                            return JsonErrorBuilder.getJsonObject(400, "Strophe position must be an integer");
+                        }
+
+                        int position = ((JsonObject)stropheJson).get("position").getAsInt();
+                        Strophe strophe = stropheDAO.getStropheAt(position, partition);
+
+                        if(strophe == null) {
+                            return JsonErrorBuilder.getJsonObject(404, "Strophe at position " + position + " not found");
+                        }
+
+                        if(!((JsonObject)stropheJson).has("lignes")) {
+                            return JsonErrorBuilder.getJsonObject(400, "strophes must contain an array of ligne(s)");
+                        }
+
+                        if(!((JsonObject) stropheJson).get("lignes").isJsonArray()) {
+                            return JsonErrorBuilder.getJsonObject(400, "lignes must be an array");
+                        }
+
+                        System.out.println("<=== DEBUG BUG HERE ===>");
+
+                        lignesJson = ((JsonObject) stropheJson).getAsJsonArray("lignes");
+                        for(JsonElement ligneJson : lignesJson) {
+                            if(!((JsonObject)ligneJson).has("position")) {
+                                return JsonErrorBuilder.getJsonObject(
+                                        400, "lignes must have a position");
+                            }
+                            try {
+                                Integer.parseInt(((JsonObject)ligneJson).get("position").getAsString());
+                            } catch(NumberFormatException e) {
+                                return JsonErrorBuilder.getJsonObject(
+                                        400, "Ligne position must be an integer");
+                            }
+                            int linePosition = ((JsonObject) ligneJson).get("position").getAsInt();
+                            Ligne ligne = ligneDAO.getLigneAt(linePosition, strophe);
+                            if(ligne == null) {
+                                return JsonErrorBuilder.getJsonObject(
+                                        404, "Ligne position " + linePosition + " not found");
+                            }
+                        }
+
+                    } else {
+                        return JsonErrorBuilder.getJsonObject(400, "Strophe must have a position");
+                    }
+                }
+                // All checks done, we make the modifications
+                for(JsonElement stropheJson : strophesJson) {
+                    Strophe strophe = stropheDAO.getStropheAt(((JsonObject)stropheJson).get("position").getAsInt(), partition);
+                    lignesJson = ((JsonObject) stropheJson).getAsJsonArray("lignes");
+                    for(JsonElement ligneJson : lignesJson) {
+                        Ligne ligne = ligneDAO.getLigneAt(((JsonObject)ligneJson).get("position").getAsInt(), strophe);
+
+                        ligne.setAccord(EscapeUtils.html2text(((JsonObject)ligneJson).get("accord").getAsString()));
+                        ligne.setText(EscapeUtils.html2text(((JsonObject)ligneJson).get("text").getAsString()));
+                        ligneDAO.updateLigne(ligne);
+                    }
+                }
+
+                Calendar calendar = Calendar.getInstance();
+                java.util.Date currentDate = calendar.getTime();
+                java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
+                partition.setModificationDate(sqlDate);
+                partitionDAO.UpdatePartition(partition);
+
+                jsonResponse = JsonErrorBuilder.getJsonObject(
+                        200, "Partition successfully updated");
+
+            } else {
+                Calendar calendar = Calendar.getInstance();
+                java.util.Date currentDate = calendar.getTime();
+                java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
+                partition.setModificationDate(sqlDate);
+                partitionDAO.UpdatePartition(partition);
+
+                jsonResponse = JsonErrorBuilder.getJsonObject(
+                        200, "Partition title successfully updated");
+            }
+
+        } else {
+            jsonResponse = JsonErrorBuilder.getJsonObject(404, "Partition not found");
+        }
+
+        return jsonResponse;
     }
 
+    @Override
+    public JsonObject deletePartitionJson(int id) {
+
+        JsonObject jsonResponse = null;
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        IPartitionDAO partitionDAO = daoFactory.getPartitionDAO();
+        IStropheDAO stropheDAO = daoFactory.getStropheDAO();
+        ILigneDAO ligneDAO = daoFactory.getLigneDAO();
+
+        Partition partition = partitionDAO.GetPartition(id);
+        if(partition != null) {
+            List<Strophe> strophes = stropheDAO.getStrophes(partition);
+            for(Strophe strophe : strophes) {
+                //List<Ligne> lignes = ligneDAO.getLignes(strophe);
+                int deletionStatus = ligneDAO.removeLignes(strophe);
+                //FIXME check deletion status
+                /*
+                if(deletionStatus == 0) {
+                    jsonResponse = JsonErrorBuilder.getJsonObject(
+                            500,
+                            "User not deleted because role " + role.getName() + " could not be removed");
+                    return jsonResponse;
+                }
+                */
+            }
+            //FIXME check deletion status
+            stropheDAO.removeStrophes(partition);
+            int nbRowsAffected = partitionDAO.DeletePartition(partition.getId());
+            if(nbRowsAffected > 0) {
+                // FIXME rename or extends JsonBuilder so we do not use "error" here
+                jsonResponse = JsonErrorBuilder.getJsonObject(200, "Partition deleted");
+            } else {
+                jsonResponse = JsonErrorBuilder.getJsonObject(500, "Partition not deleted");
+            }
+        } else {
+            jsonResponse = JsonErrorBuilder.getJsonObject(404, "Partition not found");
+        }
+        return jsonResponse;
+    }
+
+    @Override
+    public JsonObject addPartitionJson(JsonObject partition, String baseUrl) {
+        if(!isValidPartition(partition)) {
+            return JsonErrorBuilder.getJsonObject(
+                    400,
+                    "required field missing or incorrectly formatted, please check the requirements");
+        }
+
+        JsonObject jsonResponse = null;
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        UserDAO userDAO = daoFactory.getUserDAO();
+        IAuthorDAO authorDAO = daoFactory.getAuthorDAO();
+        IStropheDAO stropheDAO = daoFactory.getStropheDAO();
+        ILigneDAO ligneDAO = daoFactory.getLigneDAO();
+        IPartitionDAO partitionDAO = daoFactory.getPartitionDAO();
+
+        Author author = authorDAO.getAuthor(partition.get("author").getAsInt());
+        if(author == null) {
+            return JsonErrorBuilder.getJsonObject(
+                    400,
+                    "The author id specified does not exist. Partition not created");
+        }
+
+        User user = userDAO.GetUser(partition.get("creator").getAsInt());
+        if(user == null) {
+            return JsonErrorBuilder.getJsonObject(
+                    400,
+                    "The creator id specified does not exist. Partition not created");
+        }
+
+        Partition newPartition = new Partition();
+        newPartition.setTitle(partition.get("title").getAsString());
+        newPartition.setUrlImage(DEFAULT_IMAGE);
+        newPartition.setUserValidation(DEFAULT_USER_VALIDATION);
+        newPartition.setModeratorValidation(DEFAULT_MODERATOR_VALIDATION);
+        newPartition.setAuthor(author);
+        newPartition.setCreator(user);
+
+        Calendar calendar = Calendar.getInstance();
+        java.util.Date currentDate = calendar.getTime();
+        java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
+        newPartition.setCreationDate(sqlDate);
+        newPartition.setModificationDate(newPartition.getCreationDate());
+
+        int lastPartitionInsertId = partitionDAO.AddPartition(newPartition);
+        if(lastPartitionInsertId == 0) {
+            return JsonErrorBuilder.getJsonObject(
+                    500,
+                    "Partition could not be created");
+        }
+
+        newPartition.setId(lastPartitionInsertId);
+        JsonArray strophes = partition.get("strophes").getAsJsonArray();
+        int lastStropheInsertId = 0;
+        for(JsonElement strophe : strophes) {
+            Strophe newStrophe = new Strophe();
+            //newStrophe.setFkIdPartition(lastPartitionInsertId);
+            newStrophe.setPosition(((JsonObject)strophe).get("position").getAsInt());
+            // FIXME no need to transmit new partition since we have the lastPartitionInsertId ??
+            lastStropheInsertId = stropheDAO.addStrophe(newStrophe, newPartition);
+            if(lastStropheInsertId == 0) {
+                // "rollback"
+                // FIXME verify deletion status
+                for(Strophe stropheToRemove : stropheDAO.getStrophes(newPartition)) {
+                    ligneDAO.removeLignes(stropheToRemove);
+                }
+                stropheDAO.removeStrophe(lastStropheInsertId);
+                partitionDAO.DeletePartition(lastPartitionInsertId);
+
+                return JsonErrorBuilder.getJsonObject(
+                        500,
+                        "Strophe positioned at " + newStrophe.getPosition() + " could not be created. Aborted.");
+            }
+
+            newStrophe.setId(lastStropheInsertId);
+            JsonArray lignes = ((JsonObject) strophe).get("lignes").getAsJsonArray();
+            int lastLigneInsertId = 0;
+            for(JsonElement ligne : lignes) {
+                Ligne newLigne = new Ligne();
+                //newLigne.setFkIdStrophe(lastStropheInsertId);
+                newLigne.setAccord(((JsonObject)ligne).get("accord").getAsString());
+                newLigne.setText(((JsonObject)ligne).get("text").getAsString());
+                newLigne.setPosition(((JsonObject)ligne).get("position").getAsInt());
+
+                // FIXME no need to transmit new strophe since we have the lastStropheInsertId ??
+                lastLigneInsertId = ligneDAO.addLigne(newLigne, newStrophe);
+                if(lastLigneInsertId == 0) {
+                    // "rollback"
+                    // FIXME verify deletion status
+                    for(Strophe stropheToRemove : stropheDAO.getStrophes(newPartition)) {
+                        ligneDAO.removeLignes(stropheToRemove);
+                    }
+                    stropheDAO.removeStrophe(lastStropheInsertId);
+                    partitionDAO.DeletePartition(lastPartitionInsertId);
+
+                    return JsonErrorBuilder.getJsonObject(
+                            500,
+                            "Ligne positioned at " + newLigne.getPosition() + " could not be created. Aborted.");
+                }
+            }
+        }
+
+        // FIXME rename or extends JsonBuilder so we do not use "error" here
+        jsonResponse = JsonErrorBuilder.getJsonObject(201, baseUrl + lastPartitionInsertId);
+
+        return jsonResponse;
+    }
+
+    private boolean isValidPartition(JsonObject jsonObj) {
+
+        boolean isValid =
+                jsonObj != null &&
+                jsonObj.has("title") &&
+                jsonObj.has("creator") &&
+                jsonObj.has("author") &&
+                jsonObj.has("strophes") &&
+                jsonObj.get("strophes").isJsonArray();
+        if(!isValid) {
+            return isValid;
+        }
+
+        JsonArray strophes = jsonObj.get("strophes").getAsJsonArray();
+        for(JsonElement strophe : strophes) {
+            isValid = isValid && isValidStrophe((JsonObject)strophe);
+            //System.out.println("IsValidStrophe: " + (isValid ? "true" : false));
+        }
+
+        return isValid;
+    }
+
+    // FIXME verify that position is integer
+    private boolean isValidStrophe(JsonObject jsonObj) {
+        boolean isValid =
+                jsonObj != null &&
+                jsonObj.has("position") &&
+                jsonObj.has("lignes") &&
+                jsonObj.get("lignes").isJsonArray();
+        JsonArray lignes = jsonObj.get("lignes").getAsJsonArray();
+        for(JsonElement ligne : lignes) {
+            isValid = isValid && isValidLigne((JsonObject) ligne);
+            //System.out.println("IsValidLigne: " + (isValid ? "true" : false));
+        }
+
+        return isValid;
+    }
+
+    // FIXME verify that position is integer
+    private boolean isValidLigne(JsonObject jsonObj) {
+        return  jsonObj != null &&
+                jsonObj.has("accord") &&
+                jsonObj.has("text") &&
+                jsonObj.has("position");
+    }
 }

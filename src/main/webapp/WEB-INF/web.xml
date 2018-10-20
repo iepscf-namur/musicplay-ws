@@ -44,5 +44,32 @@
         <url-pattern>/account/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>RoleController</servlet-name>
+        <servlet-class>WS.servlets.RoleController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RoleController</servlet-name>
+        <url-pattern>/roles/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AuthorController</servlet-name>
+        <servlet-class>WS.servlets.AuthorController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthorController</servlet-name>
+        <url-pattern>/authors/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>PartitionController</servlet-name>
+        <servlet-class>WS.servlets.PartitionController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PartitionController</servlet-name>
+        <url-pattern>/partitions/*</url-pattern>
+    </servlet-mapping>
+
 
 </web-app>

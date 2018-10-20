@@ -20,6 +20,8 @@ public class Author {
         this.name = name;
     }
 
+    public Author() {}
+
     public Author(int id, String name) {
         this.id = id;
         this.name = name;

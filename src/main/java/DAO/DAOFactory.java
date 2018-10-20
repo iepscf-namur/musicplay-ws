@@ -5,11 +5,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DAOFactory {
+    private static DAOFactory _instance = null;
     private String url;
     private String username;
     private String password;
 
-    DAOFactory(String url, String username, String password){
+    private DAOFactory(String url, String username, String password){
         this.url = url + "?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC";
         this.username = username;
         this.password = password;
@@ -23,9 +24,10 @@ public class DAOFactory {
         catch (ClassNotFoundException e){
 
         }
-
-        DAOFactory instance = new DAOFactory("jdbc:mysql://localhost:3306/musicplaydb", "root", "1234");
-        return instance;
+        if(DAOFactory._instance == null) {
+            DAOFactory._instance = new DAOFactory("jdbc:mysql://localhost:3306/musicplaydb", "root", "");
+        }
+        return DAOFactory._instance;
     }
 
     public Connection getConnection() throws SQLException{
@@ -35,4 +37,12 @@ public class DAOFactory {
     public UserDAO getUserDAO(){
         return new UserDAOImpl(this);
     }
+    public IRoleDAO getRoleDAO(){ return new RoleDAOImpl(this); }
+    public IUserRoleDAO getUserRoleDAO(){
+        return new UserRoleDAOImpl(this);
+    }
+    public IAuthorDAO getAuthorDAO(){ return new AuthorDAOImpl(this); }
+    public IPartitionDAO getPartitionDAO(){ return new PartitionDAOImpl(this); }
+    public ILigneDAO getLigneDAO(){ return new LigneDAOImpl(this); }
+    public IStropheDAO getStropheDAO(){ return new StropheDAOImpl(this); }
 }

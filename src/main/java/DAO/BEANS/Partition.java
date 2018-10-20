@@ -1,19 +1,29 @@
 package DAO.BEANS;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.sql.Date;
+import java.util.List;
 
 public class Partition {
     private int id;
     private String title;
     private String urlImage;
-    private int userValidation;
-    private int moderatorValidation;
-    private int creator;
-    private int author;
+    private boolean userValidation;
+    private boolean moderatorValidation;
+    private User creator;
+    private Author author;
+    private List<Strophe> strophes;
     private Date creationDate;
     private Date modificationDate;
 
-    public Partition(int id, String title, String urlImage, int userValidation, int moderatorValidation, int creator, int author, Date creationDate, Date modificationDate) {
+    public Partition() {
+        strophes = new ArrayList<>();
+    }
+
+    /*
+    public Partition(int id, String title, String urlImage, boolean userValidation,
+                     boolean moderatorValidation, User creator, Author author,
+                     Date creationDate, Date modificationDate) {
         this.id = id;
         this.title = title;
         this.urlImage = urlImage;
@@ -24,6 +34,7 @@ public class Partition {
         this.creationDate = creationDate;
         this.modificationDate = modificationDate;
     }
+    */
 
     public int getId() {
         return id;
@@ -49,35 +60,35 @@ public class Partition {
         this.urlImage = urlImage;
     }
 
-    public int getUserValidation() {
+    public boolean isUserValidation() {
         return userValidation;
     }
 
-    public void setUserValidation(int userValidation) {
+    public void setUserValidation(boolean userValidation) {
         this.userValidation = userValidation;
     }
 
-    public int getModeratorValidation() {
+    public boolean isModeratorValidation() {
         return moderatorValidation;
     }
 
-    public void setModeratorValidation(int moderatorValidation) {
+    public void setModeratorValidation(boolean moderatorValidation) {
         this.moderatorValidation = moderatorValidation;
     }
 
-    public int getCreator() {
+    public User getCreator() {
         return creator;
     }
 
-    public void setCreator(int creator) {
+    public void setCreator(User creator) {
         this.creator = creator;
     }
 
-    public int getAuthor() {
+    public Author getAuthor() {
         return author;
     }
 
-    public void setAuthor(int author) {
+    public void setAuthor(Author author) {
         this.author = author;
     }
 
@@ -95,5 +106,20 @@ public class Partition {
 
     public void setModificationDate(Date modificationDate) {
         this.modificationDate = modificationDate;
+    }
+
+    public List<Strophe> getStrophes() {
+        return strophes;
+    }
+
+    public void setStrophes(List<Strophe> strophes) {
+        this.strophes = strophes;
+        /*
+        System.out.println("setStrophes : " + (strophes.isEmpty() ? "EMPTY" : "NOT EMPTY"));
+        for(Strophe strophe : strophes) {
+            this.strophes.add(strophe);
+        }
+        */
+
     }
 }
