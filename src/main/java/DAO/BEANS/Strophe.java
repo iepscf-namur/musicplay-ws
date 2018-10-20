@@ -1,15 +1,25 @@
 package DAO.BEANS;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Strophe {
     private int id;
-    private int fkIdPartition;
-    private int order;
+    //private int fkIdPartition;
+    private int position;
+    private List<Ligne> lignes;
 
-    public Strophe(int id, int fkIdPartition, int order) {
+    public Strophe() {
+        this.lignes = new ArrayList<>();
+    }
+
+    /*
+    public Strophe(int id, int fkIdPartition, int position) {
         this.id = id;
         this.fkIdPartition = fkIdPartition;
-        this.order = order;
+        this.position = position;
     }
+    */
 
     public int getId() {
         return id;
@@ -19,6 +29,7 @@ public class Strophe {
         this.id = id;
     }
 
+    /*
     public int getFkIdPartition() {
         return fkIdPartition;
     }
@@ -26,12 +37,22 @@ public class Strophe {
     public void setFkIdPartition(int fkIdPartition) {
         this.fkIdPartition = fkIdPartition;
     }
+    */
 
-    public int getOrder() {
-        return order;
+
+    public int getPosition() {
+        return position;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public List<Ligne> getLignes() {
+        return lignes;
+    }
+
+    public void setLignes(List<Ligne> lignes) {
+        this.lignes = lignes;
     }
 }

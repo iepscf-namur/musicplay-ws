@@ -42,10 +42,11 @@ public class UserDAOImpl implements UserDAO {
             if(generatedKey.next()) {
                 lastInsertID = generatedKey.getInt(1);
             }
+            generatedKey.close();
             preparedStatement.close();
-        }catch(SQLException e)
-        {
-            System.out.println("SQLException");
+            connexion.close();
+
+        }catch(SQLException e) {
             e.printStackTrace();
         }
 
@@ -66,6 +67,8 @@ public class UserDAOImpl implements UserDAO {
 
             nbRowsAffected = preparedStatement.executeUpdate();
             preparedStatement.close();
+            connexion.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -84,6 +87,7 @@ public class UserDAOImpl implements UserDAO {
             preparedStatemnt.setInt(1, id);
             nbRowsAffected = preparedStatemnt.executeUpdate();
             preparedStatemnt.close();
+            connexion.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,8 +101,6 @@ public class UserDAOImpl implements UserDAO {
         User user = null;
         try{
             connexion = daoFactory.getConnection();
-            //Statement statement = connexion.createStatement();
-            //ResultSet resultSet = statement.executeQuery(FIND_BY_ID);
             PreparedStatement preparedStatement = connexion.prepareStatement(FIND_BY_ID);
             preparedStatement.setString(1, Integer.toString(id));
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -109,6 +111,9 @@ public class UserDAOImpl implements UserDAO {
                 user.setPassword(resultSet.getString("password"));
                 user.setSalt(resultSet.getString("salt"));
             }
+            resultSet.close();
+            preparedStatement.close();
+            connexion.close();
 
         }catch(SQLException e) {
             e.printStackTrace();
@@ -121,8 +126,6 @@ public class UserDAOImpl implements UserDAO {
         User user = null;
         try{
             connexion = daoFactory.getConnection();
-            //Statement statement = connexion.createStatement();
-            //ResultSet resultSet = statement.executeQuery(FIND_BY_ID);
             PreparedStatement preparedStatement = connexion.prepareStatement(FIND_BY_LOGIN);
             preparedStatement.setString(1, login);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -133,6 +136,9 @@ public class UserDAOImpl implements UserDAO {
                 user.setPassword(resultSet.getString("password"));
                 user.setSalt(resultSet.getString("salt"));
             }
+            resultSet.close();
+            preparedStatement.close();
+            connexion.close();
 
         }catch(SQLException e) {
             e.printStackTrace();
@@ -159,6 +165,7 @@ public class UserDAOImpl implements UserDAO {
             }
             resultSet.close();
             statement.close();
+            connexion.close();
 
         } catch (SQLException e) {
             e.printStackTrace();

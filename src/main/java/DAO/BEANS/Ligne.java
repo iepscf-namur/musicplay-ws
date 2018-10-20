@@ -4,14 +4,19 @@ public class Ligne {
     private int id;
     private String accord;
     private String text;
-    private int fkIdStrophe;
+    private int position;
+    //private int fkIdStrophe;
 
+    public Ligne() {}
+
+    /*
     public Ligne(int id, String accord, String text, int fkIdStrophe) {
         this.id = id;
         this.accord = accord;
         this.text = text;
         this.fkIdStrophe = fkIdStrophe;
     }
+    */
 
     public int getId() {
         return id;
@@ -37,11 +42,22 @@ public class Ligne {
         this.text = text;
     }
 
+    /*
     public int getFkIdStrophe() {
         return fkIdStrophe;
     }
 
     public void setFkIdStrophe(int fkIdStrophe) {
         this.fkIdStrophe = fkIdStrophe;
+    }
+    */
+
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 }

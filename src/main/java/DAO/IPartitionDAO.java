@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 public interface IPartitionDAO {
-    void AddPartition(Partition partition, User creator, Author author, Map<Strophe, List<Ligne>> strophesLignes);
-    void UpdatePartition(Partition partition);
-    void DeletePartition(int id);
-    Partition GetPartition(int id);
-    List<Partition> GetPartitions();
+    public int AddPartition(Partition partition);
+    public int UpdatePartition(Partition partition);
+    public int DeletePartition(int id);
+    public Partition GetPartition(int id);
+    public List<Partition> GetPartitions();
+    public List<Partition> GetPartitions(Author author);
+    public List<Partition> GetPartitions(User creator);
+    public List<Partition> GetPartitions(boolean moderatorStatus);
 }
