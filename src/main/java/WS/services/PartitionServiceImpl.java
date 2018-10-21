@@ -3,6 +3,7 @@ package WS.services;
 import DAO.*;
 import DAO.BEANS.*;
 import WS.errors.JsonErrorBuilder;
+import WS.utils.DateTimeUtils;
 import WS.utils.EscapeUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -82,7 +83,40 @@ public class PartitionServiceImpl implements IPartitionService {
         JsonArray partitionsJsonArray = new JsonArray();
 
         for(Partition partition : partitions) {
-            partitionsJsonArray.add(getPartitionJson(partition.getId()));
+
+            JsonObject jsonObj = new JsonObject();
+            jsonObj.addProperty("id", partition.getId());
+            jsonObj.addProperty("title", partition.getTitle());
+            jsonObj.addProperty("urlImage", partition.getUrlImage());
+            jsonObj.addProperty("creator", partition.getCreator().getLogin());
+            jsonObj.addProperty("author", partition.getAuthor().getName());
+            jsonObj.addProperty("userValidation", partition.isUserValidation());
+            jsonObj.addProperty("moderatorValidation", partition.isModeratorValidation());
+            jsonObj.addProperty("creationDate", partition.getCreationDate().toString());
+            jsonObj.addProperty("modificationDate", partition.getModificationDate().toString());
+
+            List<Strophe> strophes = partition.getStrophes();
+            JsonArray jsonStrophes = new JsonArray();
+            for(Strophe strophe : strophes) {
+                JsonObject jsonStrophe = new JsonObject();
+                jsonStrophe.addProperty("position", strophe.getPosition());
+                List<Ligne> lignes = strophe.getLignes();
+                JsonArray jsonLignes = new JsonArray();
+                for(Ligne ligne : lignes) {
+                    JsonObject jsonLigne = new JsonObject();
+                    jsonLigne.addProperty("id", ligne.getId());
+                    jsonLigne.addProperty("accord", ligne.getAccord());
+                    jsonLigne.addProperty("text", ligne.getText());
+                    jsonLigne.addProperty("position", ligne.getPosition());
+                    jsonLignes.add(jsonLigne);
+                }
+                jsonStrophe.add("lignes", jsonLignes);
+                jsonStrophes.add(jsonStrophe);
+            }
+
+            jsonObj.add("strophes", jsonStrophes);
+
+            partitionsJsonArray.add(jsonObj);
         }
 
         return partitionsJsonArray;
@@ -118,27 +152,10 @@ public class PartitionServiceImpl implements IPartitionService {
             }
 
             if(jsonObject.has("userValidation")) {
-                /*
-                if(jsonObject.get("userValidation").getAsString().equals("true") ||
-                        jsonObject.get("userValidation").getAsString().equals("false")) {
-                    partition.setUserValidation(jsonObject.get("userValidation").getAsBoolean());
-                } else {
-                    return JsonErrorBuilder.getJsonObject(400, "userValidation must be true or false");
-                }
-                */
                 partition.setUserValidation(Boolean.parseBoolean(jsonObject.get("userValidation").getAsString()));
             }
 
             if(jsonObject.has("moderatorValidation")) {
-                /*
-                if(jsonObject.get("moderatorValidation").getAsString().equals("true") ||
-                        jsonObject.get("moderatorValidation").getAsString().equals("false")) {
-                    partition.setModeratorValidation(jsonObject.get("moderatorValidation").getAsBoolean());
-                } else {
-                    return JsonErrorBuilder.getJsonObject(400, "moderatorValidation must be true or false");
-                }
-                */
-
                 partition.setModeratorValidation(Boolean.parseBoolean(jsonObject.get("moderatorValidation").getAsString()));
             }
 
@@ -176,8 +193,6 @@ public class PartitionServiceImpl implements IPartitionService {
                             return JsonErrorBuilder.getJsonObject(400, "lignes must be an array");
                         }
 
-                        System.out.println("<=== DEBUG BUG HERE ===>");
-
                         lignesJson = ((JsonObject) stropheJson).getAsJsonArray("lignes");
                         for(JsonElement ligneJson : lignesJson) {
                             if(!((JsonObject)ligneJson).has("position")) {
@@ -202,40 +217,41 @@ public class PartitionServiceImpl implements IPartitionService {
                         return JsonErrorBuilder.getJsonObject(400, "Strophe must have a position");
                     }
                 }
+
                 // All checks done, we make the modifications
                 for(JsonElement stropheJson : strophesJson) {
                     Strophe strophe = stropheDAO.getStropheAt(((JsonObject)stropheJson).get("position").getAsInt(), partition);
-                    lignesJson = ((JsonObject) stropheJson).getAsJsonArray("lignes");
-                    for(JsonElement ligneJson : lignesJson) {
-                        Ligne ligne = ligneDAO.getLigneAt(((JsonObject)ligneJson).get("position").getAsInt(), strophe);
+                    lignesJson = stropheJson.getAsJsonObject().getAsJsonArray("lignes");
 
-                        ligne.setAccord(EscapeUtils.html2text(((JsonObject)ligneJson).get("accord").getAsString()));
-                        ligne.setText(EscapeUtils.html2text(((JsonObject)ligneJson).get("text").getAsString()));
+                    for(JsonElement ligneJson : lignesJson) {
+
+                        Ligne ligne = ligneDAO.getLigneAt(ligneJson.getAsJsonObject().get("position").getAsInt(), strophe);
+
+                        if(ligneJson.getAsJsonObject().has("accord")) {
+                            ligne.setAccord(EscapeUtils.html2text(ligneJson.getAsJsonObject().get("accord").getAsString()));
+                        }
+                        if(ligneJson.getAsJsonObject().has("text")) {
+                            ligne.setText(EscapeUtils.html2text(ligneJson.getAsJsonObject().get("text").getAsString()));
+                        }
                         ligneDAO.updateLigne(ligne);
                     }
                 }
 
-                Calendar calendar = Calendar.getInstance();
-                java.util.Date currentDate = calendar.getTime();
-                java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
-                partition.setModificationDate(sqlDate);
+                partition.setModificationDate(DateTimeUtils.getSqlCurrentDate());
                 partitionDAO.UpdatePartition(partition);
 
                 jsonResponse = JsonErrorBuilder.getJsonObject(
                         200, "Partition successfully updated");
 
-            } else {
-                Calendar calendar = Calendar.getInstance();
-                java.util.Date currentDate = calendar.getTime();
-                java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
-                partition.setModificationDate(sqlDate);
+            } else { // no "strophes" member in json
+                partition.setModificationDate(DateTimeUtils.getSqlCurrentDate());
                 partitionDAO.UpdatePartition(partition);
 
                 jsonResponse = JsonErrorBuilder.getJsonObject(
                         200, "Partition title successfully updated");
             }
 
-        } else {
+        } else { //jsonobject or partition is null
             jsonResponse = JsonErrorBuilder.getJsonObject(404, "Partition not found");
         }
 
@@ -292,7 +308,7 @@ public class PartitionServiceImpl implements IPartitionService {
 
         JsonObject jsonResponse = null;
         DAOFactory daoFactory = DAOFactory.getInstance();
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
         IAuthorDAO authorDAO = daoFactory.getAuthorDAO();
         IStropheDAO stropheDAO = daoFactory.getStropheDAO();
         ILigneDAO ligneDAO = daoFactory.getLigneDAO();
@@ -320,10 +336,7 @@ public class PartitionServiceImpl implements IPartitionService {
         newPartition.setAuthor(author);
         newPartition.setCreator(user);
 
-        Calendar calendar = Calendar.getInstance();
-        java.util.Date currentDate = calendar.getTime();
-        java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
-        newPartition.setCreationDate(sqlDate);
+        newPartition.setCreationDate(DateTimeUtils.getSqlCurrentDate());
         newPartition.setModificationDate(newPartition.getCreationDate());
 
         int lastPartitionInsertId = partitionDAO.AddPartition(newPartition);
@@ -338,7 +351,6 @@ public class PartitionServiceImpl implements IPartitionService {
         int lastStropheInsertId = 0;
         for(JsonElement strophe : strophes) {
             Strophe newStrophe = new Strophe();
-            //newStrophe.setFkIdPartition(lastPartitionInsertId);
             newStrophe.setPosition(((JsonObject)strophe).get("position").getAsInt());
             // FIXME no need to transmit new partition since we have the lastPartitionInsertId ??
             lastStropheInsertId = stropheDAO.addStrophe(newStrophe, newPartition);
@@ -361,7 +373,6 @@ public class PartitionServiceImpl implements IPartitionService {
             int lastLigneInsertId = 0;
             for(JsonElement ligne : lignes) {
                 Ligne newLigne = new Ligne();
-                //newLigne.setFkIdStrophe(lastStropheInsertId);
                 newLigne.setAccord(((JsonObject)ligne).get("accord").getAsString());
                 newLigne.setText(((JsonObject)ligne).get("text").getAsString());
                 newLigne.setPosition(((JsonObject)ligne).get("position").getAsInt());
@@ -406,7 +417,6 @@ public class PartitionServiceImpl implements IPartitionService {
         JsonArray strophes = jsonObj.get("strophes").getAsJsonArray();
         for(JsonElement strophe : strophes) {
             isValid = isValid && isValidStrophe((JsonObject)strophe);
-            //System.out.println("IsValidStrophe: " + (isValid ? "true" : false));
         }
 
         return isValid;
@@ -422,7 +432,6 @@ public class PartitionServiceImpl implements IPartitionService {
         JsonArray lignes = jsonObj.get("lignes").getAsJsonArray();
         for(JsonElement ligne : lignes) {
             isValid = isValid && isValidLigne((JsonObject) ligne);
-            //System.out.println("IsValidLigne: " + (isValid ? "true" : false));
         }
 
         return isValid;

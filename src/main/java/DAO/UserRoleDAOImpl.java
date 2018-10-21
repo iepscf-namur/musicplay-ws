@@ -31,7 +31,7 @@ public class UserRoleDAOImpl implements IUserRoleDAO {
             return 0;
         }
 
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
         IRoleDAO roleDAO = daoFactory.getRoleDAO();
 
         // if user or role does not exist
@@ -127,7 +127,7 @@ public class UserRoleDAOImpl implements IUserRoleDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
-                UserDAO userDAO = daoFactory.getUserDAO();
+                IUserDAO userDAO = daoFactory.getUserDAO();
                 User user = userDAO.GetUser(resultSet.getInt(1));
                 users.add(user);
             }

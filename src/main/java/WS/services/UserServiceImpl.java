@@ -31,7 +31,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public JsonObject getUserJson(int id) {
         DAOFactory daoFactory = DAOFactory.getInstance();
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
         IUserRoleDAO userRoleDAO = daoFactory.getUserRoleDAO();
         JsonObject jsonObj = null;
 
@@ -54,13 +54,39 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public JsonObject getUserJson(String login) {
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        IUserDAO userDAO = daoFactory.getUserDAO();
+        IUserRoleDAO userRoleDAO = daoFactory.getUserRoleDAO();
+        JsonObject jsonObj = null;
+
+        User user = userDAO.GetUser(login);
+        if(user != null) {
+            jsonObj = new JsonObject();
+            jsonObj.addProperty("id", user.getId());
+            jsonObj.addProperty("login", user.getLogin());
+            jsonObj.addProperty("password", user.getPassword());
+            jsonObj.addProperty("salt", user.getSalt());
+            List<Role> roles = userRoleDAO.getUserRoles(user);
+            JsonArray jsonRoles = new JsonArray();
+            for(Role role : roles) {
+                jsonRoles.add(role.getName());
+            }
+            jsonObj.add("roles", jsonRoles);
+        }
+
+        return jsonObj;
+    }
+
+    @Override
     public JsonArray getUsersJson() {
         DAOFactory daoFactory = DAOFactory.getInstance();
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
         List<User> users = userDAO.GetUsers();
 
         JsonArray usersJsonArray = new JsonArray();
 
+        // FIXME Avoid doing a request for each user !!!
         for(User user : users) {
             usersJsonArray.add(getUserJson(user.getId()));
         }
@@ -78,7 +104,7 @@ public class UserServiceImpl implements IUserService {
 
         JsonObject jsonResponse = null;
         DAOFactory daoFactory = DAOFactory.getInstance();
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
 
         User user = userDAO.GetUser(jsonObject.get("id").getAsInt());
         if(jsonObject != null && user != null) {
@@ -162,7 +188,7 @@ public class UserServiceImpl implements IUserService {
     public JsonObject deleteUserJson(int id) {
         JsonObject jsonResponse = null;
                 DAOFactory daoFactory = DAOFactory.getInstance();
-                UserDAO userDAO = daoFactory.getUserDAO();
+                IUserDAO userDAO = daoFactory.getUserDAO();
                 IUserRoleDAO userRoleDAO = daoFactory.getUserRoleDAO();
 
                 User user = userDAO.GetUser(id);
@@ -200,8 +226,9 @@ public class UserServiceImpl implements IUserService {
         int lastInsertId = 0;
         int roleUserInsertStatus = 0;
         DAOFactory daoFactory = DAOFactory.getInstance();
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
 
+        // Do not allow user creation if login already exists
         if(userDAO.GetUser(userJsonObj.get("login").getAsString()) != null) {
             jsonResponse = JsonErrorBuilder.getJsonObject(
                     400,

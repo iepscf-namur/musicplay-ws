@@ -1,6 +1,9 @@
 package WS.servlets;
 
+import DAO.BEANS.User;
+import DAO.UserRoleDAOImpl;
 import WS.errors.JsonErrorBuilder;
+import WS.services.RoleServiceImpl;
 import WS.services.UserAccountServiceImpl;
 import WS.utils.ServletUtils;
 import com.google.gson.JsonObject;
@@ -24,9 +27,11 @@ public class UserAccountController extends HttpServlet {
                 (request.getPathInfo().equals("/login") || request.getPathInfo().equals("/login/"))) {
             try {
                 JsonObject jsonObj = ServletUtils.readBody(request);
-                if (UserAccountServiceImpl.getUserAccountImpl().isCredentialsValid(jsonObj)) {
+                JsonObject user = UserAccountServiceImpl.getUserAccountImpl().verifyCredentials(jsonObj);
+                if (user != null) {
                     // FIXME rename or extends JsonBuilder so we do not use "error" here
                     jsonResponse = JsonErrorBuilder.getJsonObject(200, "user credentials valid");
+                    jsonResponse.add("user", user);
                 } else {
                     jsonResponse = JsonErrorBuilder.getJsonObject(401, "user credentials invalid");
                 }

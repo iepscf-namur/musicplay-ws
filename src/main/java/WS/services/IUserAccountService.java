@@ -4,5 +4,5 @@ import com.google.gson.JsonObject;
 
 public interface IUserAccountService {
 
-    public boolean isCredentialsValid(JsonObject credentials);
+    public JsonObject verifyCredentials(JsonObject credentials);
 }

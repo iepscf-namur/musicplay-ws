@@ -52,7 +52,7 @@ public class PartitionController extends HttpServlet {
         } catch(Exception e) {
             jsonResponse = JsonErrorBuilder.getJsonObject(
                     500,
-                    "An error occurred while processing the data provided (POST UserController)");
+                    "An error occurred while processing the data provided (POST PartitionController)");
         }
 
         response.setStatus(jsonResponse.get("code").getAsInt());
@@ -142,6 +142,7 @@ public class PartitionController extends HttpServlet {
         } catch(Exception e2) {
             jsonResponse = JsonErrorBuilder.getJsonObject(
                     500, "An error occurred while processing the data provided (PUT PartitionController)");
+            e2.printStackTrace();
         }
         response.setStatus(jsonResponse.get("code").getAsInt());
         response.getWriter().write(jsonResponse.toString());
