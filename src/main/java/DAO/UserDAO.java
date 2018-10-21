@@ -6,14 +6,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-<<<<<<< HEAD
 public interface UserDAO {
     int AddUser(User user);
     boolean UpdateUser(User user);
     boolean DeleteUser(int id);
     User AuthUser(String login, String password);
     List<User> GetUsers();
-=======
+
 public class UserDAO extends DAO<User> {
 
     private Connection connexion;
@@ -171,8 +170,4 @@ public class UserDAO extends DAO<User> {
         }
         return users;
     }
-
-
-
->>>>>>> Musicplay-ws.DAO
 }
