@@ -8,9 +8,4 @@ public class DAOFactory {
     public static DAO<User> getUserDao(){
         return new UserDAO();
     }
-
-
-
-
-
 }
