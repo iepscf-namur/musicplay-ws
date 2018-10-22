@@ -1,12 +1,14 @@
 package DAO;
 
+
+
 import DAO.BEANS.User;
+
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UserDAOImpl implements UserDAO {
+public class UserDAOImpl implements IUserDAO {
     private DAOFactory daoFactory;
     private Connection connexion;
 
@@ -18,7 +20,7 @@ public class UserDAOImpl implements UserDAO {
     private static final String UPDATE = "UPDATE user SET login=?, password=?, salt=? WHERE id=?";
 
 
-    UserDAOImpl(DAOFactory daoFactory){
+    public UserDAOImpl(DAOFactory daoFactory){
         this.daoFactory = daoFactory;
     }
 
@@ -27,6 +29,7 @@ public class UserDAOImpl implements UserDAO {
     public int AddUser(User user){
         int lastInsertID = 0 ;
         try{
+            connexion = daoFactory.getConnection();
             CallableStatement callableStatement = connexion.prepareCall(INSERT_STOREDPROC);
             callableStatement.setString(1, user.getLogin());
             callableStatement.setString(2, user.getPassword());
@@ -47,6 +50,7 @@ public class UserDAOImpl implements UserDAO {
     public boolean UpdateUser(User user) {
         boolean response = false ;
         try {
+            connexion = daoFactory.getConnection();
             PreparedStatement preparedStatement = connexion.prepareStatement(UPDATE);
             preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
@@ -65,6 +69,7 @@ public class UserDAOImpl implements UserDAO {
     public boolean DeleteUser(int id) {
         boolean response = false ;
         try {
+            connexion = daoFactory.getConnection();
             PreparedStatement preparedStatemnt = connexion.prepareStatement(DELETE);
 
             preparedStatemnt.setInt(1, id);
@@ -81,6 +86,7 @@ public class UserDAOImpl implements UserDAO {
     public List<User> GetUsers() {
         List<User> users = new LinkedList<User>();
         try {
+            connexion = daoFactory.getConnection();
             Statement statement = connexion.createStatement();
             ResultSet resultSet = statement.executeQuery(FIND_ALL);
 
@@ -106,6 +112,7 @@ public class UserDAOImpl implements UserDAO {
     public User AuthUser(String login, String password){
         User user = new User();
         try{
+            connexion = daoFactory.getConnection();
             CallableStatement callableStatement = connexion.prepareCall(AUTH_STOREDPROC);
             callableStatement.setString(1, login);
             callableStatement.setString(2, password);
@@ -121,28 +128,55 @@ public class UserDAOImpl implements UserDAO {
         return user ;
     }
 
-    // Helpers
-    // Used in stored_proc to return user after login
+    public Connection getConnection() {
+
+        String dbURL = "jdbc:mysql://localhost/musicplay";
+        String dbUser = "root";
+        String dbPassword = "";
+
+        try {
+            if (connexion == null) {
+                Class.forName("com.mysql.jdbc.Driver");
+                connexion = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+            }
+        } catch (Exception e) {
+            //e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        return connexion;
+
+    }
+
+    public void closeConnection() {
+        if (connexion != null) {
+            try {
+                connexion.close();
+            } catch (SQLException e) {
+                //e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    // Helper
     private User GetUser(int id){
-        User user = null;
+        User user = new User();
         try{
-            PreparedStatement preparedStatement = connexion.prepareStatement(FIND_BY_ID);
-            preparedStatement.setString(1, Integer.toString(id));
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
-                user = new User();
+            connexion = daoFactory.getConnection();
+            Statement statement = connexion.prepareStatement(FIND_BY_ID);
+            ((PreparedStatement) statement).setInt(1, id);
+            ResultSet resultSet = ((PreparedStatement) statement).executeQuery();
+            if(resultSet.next()){
                 user.setId(Integer.parseInt(resultSet.getString("id")));
                 user.setLogin(resultSet.getString("login"));
                 user.setPassword(resultSet.getString("password"));
                 user.setSalt(resultSet.getString("salt"));
             }
-            resultSet.close();
-            preparedStatement.close();
-            connexion.close();
-
         }catch(SQLException e) {
             e.printStackTrace();
         }
         return user ;
     }
 }
+

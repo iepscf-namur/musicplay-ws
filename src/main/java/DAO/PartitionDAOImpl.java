@@ -116,7 +116,7 @@ public class PartitionDAOImpl implements IPartitionDAO {
     public Partition GetPartition(int id) {
 
         Partition partition = null;
-        UserDAO userDAO = daoFactory.getUserDAO();
+        IUserDAO userDAO = daoFactory.getUserDAO();
         IAuthorDAO authorDAO = daoFactory.getAuthorDAO();
         try{
             connexion = daoFactory.getConnection();
@@ -159,13 +159,35 @@ public class PartitionDAOImpl implements IPartitionDAO {
     @Override
     public List<Partition> GetPartitions() {
         List<Partition> partitions = new ArrayList<>();
+        IUserDAO userDAO = daoFactory.getUserDAO();
+        IAuthorDAO authorDAO = daoFactory.getAuthorDAO();
         try {
             connexion = daoFactory.getConnection();
             Statement statement = connexion.createStatement();
             ResultSet resultSet = statement.executeQuery(FIND_ALL);
 
             while(resultSet.next()){
-                Partition partition = GetPartition(resultSet.getInt("id"));
+                Partition partition = new Partition();
+                partition.setId(resultSet.getInt("id"));
+                partition.setTitle(resultSet.getString("title"));
+                partition.setUrlImage(resultSet.getString("urlImage"));
+                User creator = userDAO.GetUser(resultSet.getInt("creatorFkIdUser"));
+                partition.setCreator(creator);
+                Author author = authorDAO.getAuthor(resultSet.getInt("authorFkIdAuthor"));
+                partition.setAuthor(author);
+                partition.setUserValidation(resultSet.getBoolean("userValidation"));
+                partition.setModeratorValidation(resultSet.getBoolean("moderatorValidation"));
+
+                IStropheDAO stropheDAO = daoFactory.getStropheDAO();
+                partition.setStrophes(stropheDAO.getStrophes(partition));
+
+                ILigneDAO ligneDAO = daoFactory.getLigneDAO();
+                for(Strophe strophe : partition.getStrophes()) {
+                    strophe.setLignes(ligneDAO.getLignes(strophe));
+                }
+
+                partition.setCreationDate(resultSet.getDate("creationDate"));
+                partition.setModificationDate(resultSet.getDate("modificationDate"));
                 partitions.add(partition);
             }
             resultSet.close();
@@ -180,15 +202,37 @@ public class PartitionDAOImpl implements IPartitionDAO {
 
     @Override
     public List<Partition> GetPartitions(Author author) {
-
         List<Partition> partitions = new ArrayList<>();
+        IUserDAO userDAO = daoFactory.getUserDAO();
+        IAuthorDAO authorDAO = daoFactory.getAuthorDAO();
+
         try{
             connexion = daoFactory.getConnection();
             PreparedStatement preparedStatement = connexion.prepareStatement(FIND_BY_AUTHOR);
             preparedStatement.setInt(1, author.getId());
             ResultSet resultSet = preparedStatement.executeQuery();
-            while(resultSet.next()) {
-                Partition partition = GetPartition(resultSet.getInt("id"));
+            while(resultSet.next()){
+                Partition partition = new Partition();
+                partition.setId(resultSet.getInt("id"));
+                partition.setTitle(resultSet.getString("title"));
+                partition.setUrlImage(resultSet.getString("urlImage"));
+                User creator = userDAO.GetUser(resultSet.getInt("creatorFkIdUser"));
+                partition.setCreator(creator);
+                author = authorDAO.getAuthor(resultSet.getInt("authorFkIdAuthor"));
+                partition.setAuthor(author);
+                partition.setUserValidation(resultSet.getBoolean("userValidation"));
+                partition.setModeratorValidation(resultSet.getBoolean("moderatorValidation"));
+
+                IStropheDAO stropheDAO = daoFactory.getStropheDAO();
+                partition.setStrophes(stropheDAO.getStrophes(partition));
+
+                ILigneDAO ligneDAO = daoFactory.getLigneDAO();
+                for(Strophe strophe : partition.getStrophes()) {
+                    strophe.setLignes(ligneDAO.getLignes(strophe));
+                }
+
+                partition.setCreationDate(resultSet.getDate("creationDate"));
+                partition.setModificationDate(resultSet.getDate("modificationDate"));
                 partitions.add(partition);
             }
             resultSet.close();
