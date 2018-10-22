@@ -27,7 +27,6 @@ public class UserDAOImpl implements UserDAO {
     public int AddUser(User user){
         int lastInsertID = 0 ;
         try{
-            connexion = daoFactory.getConnection();
             CallableStatement callableStatement = connexion.prepareCall(INSERT_STOREDPROC);
             callableStatement.setString(1, user.getLogin());
             callableStatement.setString(2, user.getPassword());
@@ -48,7 +47,6 @@ public class UserDAOImpl implements UserDAO {
     public boolean UpdateUser(User user) {
         boolean response = false ;
         try {
-            connexion = daoFactory.getConnection();
             PreparedStatement preparedStatement = connexion.prepareStatement(UPDATE);
             preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
@@ -67,7 +65,6 @@ public class UserDAOImpl implements UserDAO {
     public boolean DeleteUser(int id) {
         boolean response = false ;
         try {
-            connexion = daoFactory.getConnection();
             PreparedStatement preparedStatemnt = connexion.prepareStatement(DELETE);
 
             preparedStatemnt.setInt(1, id);
@@ -84,7 +81,6 @@ public class UserDAOImpl implements UserDAO {
     public List<User> GetUsers() {
         List<User> users = new LinkedList<User>();
         try {
-            connexion = daoFactory.getConnection();
             Statement statement = connexion.createStatement();
             ResultSet resultSet = statement.executeQuery(FIND_ALL);
 
@@ -110,7 +106,6 @@ public class UserDAOImpl implements UserDAO {
     public User AuthUser(String login, String password){
         User user = new User();
         try{
-            connexion = daoFactory.getConnection();
             CallableStatement callableStatement = connexion.prepareCall(AUTH_STOREDPROC);
             callableStatement.setString(1, login);
             callableStatement.setString(2, password);
@@ -131,7 +126,6 @@ public class UserDAOImpl implements UserDAO {
     private User GetUser(int id){
         User user = null;
         try{
-            connexion = daoFactory.getConnection();
             PreparedStatement preparedStatement = connexion.prepareStatement(FIND_BY_ID);
             preparedStatement.setString(1, Integer.toString(id));
             ResultSet resultSet = preparedStatement.executeQuery();
