@@ -14,6 +14,7 @@ public class UserDAOImpl implements IUserDAO {
 
     private static final String DELETE = "DELETE FROM user WHERE id=?";
     private static final String FIND_BY_ID = "SELECT * FROM user WHERE id=?";
+    private static final String FIND_BY_LOGIN = "SELECT * FROM user WHERE login=?";
     private static final String FIND_ALL = "SELECT * FROM user ORDER BY id";
     private static final String AUTH_STOREDPROC= "CALL user_auth(?, ?, ?)";
     private static final String INSERT_STOREDPROC = "CALL user_create(?, ?, ?)";
@@ -92,10 +93,10 @@ public class UserDAOImpl implements IUserDAO {
 
             while(resultSet.next()){
                 User user = new User();
-                user.setId(Integer.parseInt(resultSet.getString("IdUser")));
-                user.setLogin(resultSet.getString("UserLogin"));
-                user.setPassword(resultSet.getString("UserPassword"));
-                user.setSalt(resultSet.getString("UserSalt"));
+                user.setId(Integer.parseInt(resultSet.getString("id")));
+                user.setLogin(resultSet.getString("login"));
+                user.setPassword(resultSet.getString("password"));
+                user.setSalt(resultSet.getString("salt"));
 
                 users.add(user);
             }
@@ -110,7 +111,7 @@ public class UserDAOImpl implements IUserDAO {
 
     @Override
     public User AuthUser(String login, String password){
-        User user = new User();
+        User user = null;
         try{
             connexion = daoFactory.getConnection();
             CallableStatement callableStatement = connexion.prepareCall(AUTH_STOREDPROC);
@@ -159,15 +160,37 @@ public class UserDAOImpl implements IUserDAO {
         }
     }
 
-    // Helper
-    private User GetUser(int id){
-        User user = new User();
+    @Override
+    public User GetUser(int id){
+        User user = null;
         try{
             connexion = daoFactory.getConnection();
             Statement statement = connexion.prepareStatement(FIND_BY_ID);
             ((PreparedStatement) statement).setInt(1, id);
             ResultSet resultSet = ((PreparedStatement) statement).executeQuery();
             if(resultSet.next()){
+                user = new User();
+                user.setId(Integer.parseInt(resultSet.getString("id")));
+                user.setLogin(resultSet.getString("login"));
+                user.setPassword(resultSet.getString("password"));
+                user.setSalt(resultSet.getString("salt"));
+            }
+        }catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return user ;
+    }
+
+    @Override
+    public User GetUser(String login){
+        User user = null;
+        try{
+            connexion = daoFactory.getConnection();
+            Statement statement = connexion.prepareStatement(FIND_BY_LOGIN);
+            ((PreparedStatement) statement).setString(1, login);
+            ResultSet resultSet = ((PreparedStatement) statement).executeQuery();
+            if(resultSet.next()){
+                user = new User();
                 user.setId(Integer.parseInt(resultSet.getString("id")));
                 user.setLogin(resultSet.getString("login"));
                 user.setPassword(resultSet.getString("password"));

@@ -25,7 +25,7 @@ public class DAOFactory {
 
         }
         if(DAOFactory._instance == null) {
-            DAOFactory._instance = new DAOFactory("jdbc:mysql://localhost:3306/musicplaydb", "root", "");
+            DAOFactory._instance = new DAOFactory("jdbc:mysql://localhost:3306/musicplaydb", "root", "1234");
         }
         return DAOFactory._instance;
     }

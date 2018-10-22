@@ -10,4 +10,6 @@ public interface IUserDAO {
     boolean DeleteUser(int id);
     User AuthUser(String login, String password);
     List<User> GetUsers();
+    User GetUser(int id);
+    User GetUser(String login);
 }

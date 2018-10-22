@@ -52,6 +52,7 @@ public class UserController extends HttpServlet {
             jsonResponse = JsonErrorBuilder.getJsonObject(
                     500,
                     "An error occurred while processing the data provided (POST UserController)");
+            e.printStackTrace();
         }
 
         response.setStatus(jsonResponse.get("code").getAsInt());

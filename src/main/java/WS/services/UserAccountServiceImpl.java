@@ -26,11 +26,16 @@ public class UserAccountServiceImpl implements IUserAccountService {
         if (credentials != null && credentials.has("login") && credentials.has("password")) {
             DAOFactory daoFactory = DAOFactory.getInstance();
             IUserDAO userDAO = daoFactory.getUserDAO();
-            user = userDAO.GetUser(credentials.get("login").getAsString());
+
+            System.out.println("Login: " + credentials.get("login").getAsString() +
+                    ", pass: " + credentials.get("password").getAsString() );
+            user = userDAO.AuthUser(credentials.get("login").getAsString(), credentials.get("password").getAsString());
+
         }
 
         // TODO Implement Salted Pass
-        if(user != null && user.getPassword().equals(credentials.get("password").getAsString())) {
+
+        if(user != null) {
             userJson = UserServiceImpl.getUserServiceImpl().getUserJson(credentials.get("login").getAsString());
             userJson.remove("password");
             userJson.remove("salt");

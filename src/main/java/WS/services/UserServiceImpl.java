@@ -170,8 +170,8 @@ public class UserServiceImpl implements IUserService {
                 }
             }
 
-            int updatedStatus = userDAO.UpdateUser(user);
-            if(updatedStatus != 0) {
+            //int updatedStatus = userDAO.UpdateUser(user);
+            if(userDAO.UpdateUser(user)) {
                 // FIXME rename or extends JsonBuilder so we do not use "error" here
                 jsonResponse = JsonErrorBuilder.getJsonObject(200, "User " + user.getId() + " updated");
             } else {
@@ -203,8 +203,8 @@ public class UserServiceImpl implements IUserService {
                     return jsonResponse;
                 }
             }
-            int nbRowsAffected = userDAO.DeleteUser(user.getId());
-            if(nbRowsAffected > 0) {
+            //int nbRowsAffected = userDAO.DeleteUser(user.getId());
+            if(userDAO.DeleteUser(user.getId())) {
                 // FIXME rename or extends JsonBuilder so we do not use "error" here
                 jsonResponse = JsonErrorBuilder.getJsonObject(200, "User deleted");
             }
@@ -242,7 +242,7 @@ public class UserServiceImpl implements IUserService {
         User user = new User();
         user.setLogin(EscapeUtils.html2text(userJsonObj.get("login").getAsString()));
         user.setPassword(userJsonObj.get("password").getAsString());
-        user.setSalt(userJsonObj.get("salt").getAsString());
+        //user.setSalt(userJsonObj.get("salt").getAsString());
 
         // If roles is not set in the json object, we assign the default role to the user
         if(!userJsonObj.has("roles")) {
@@ -337,7 +337,7 @@ public class UserServiceImpl implements IUserService {
         return  jsonObj != null &&
                 jsonObj.has("login") &&
                 jsonObj.has("password") &&
-                jsonObj.has("salt") &&
+                //jsonObj.has("salt") &&
                 (jsonObj.has("roles") ? jsonObj.get("roles").isJsonArray() : true);
     }
 }
