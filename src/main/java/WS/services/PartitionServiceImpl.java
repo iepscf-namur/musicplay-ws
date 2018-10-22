@@ -335,7 +335,6 @@ public class PartitionServiceImpl implements IPartitionService {
         newPartition.setModeratorValidation(DEFAULT_MODERATOR_VALIDATION);
         newPartition.setAuthor(author);
         newPartition.setCreator(user);
-
         newPartition.setCreationDate(DateTimeUtils.getSqlCurrentDate());
         newPartition.setModificationDate(newPartition.getCreationDate());
 
@@ -349,48 +348,45 @@ public class PartitionServiceImpl implements IPartitionService {
         newPartition.setId(lastPartitionInsertId);
         JsonArray strophes = partition.get("strophes").getAsJsonArray();
         int lastStropheInsertId = 0;
+        int strophePosition = 1;
         for(JsonElement strophe : strophes) {
             Strophe newStrophe = new Strophe();
-            newStrophe.setPosition(((JsonObject)strophe).get("position").getAsInt());
-            // FIXME no need to transmit new partition since we have the lastPartitionInsertId ??
+            newStrophe.setPosition(strophePosition++);
             lastStropheInsertId = stropheDAO.addStrophe(newStrophe, newPartition);
             if(lastStropheInsertId == 0) {
-                // "rollback"
-                // FIXME verify deletion status
-                for(Strophe stropheToRemove : stropheDAO.getStrophes(newPartition)) {
-                    ligneDAO.removeLignes(stropheToRemove);
+                if(rollbackAddPartition(newPartition)) {
+                    return JsonErrorBuilder.getJsonObject(
+                            500,
+                            "Strophe positioned at " + newStrophe.getPosition() + " could not be created. Aborted.");
                 }
-                stropheDAO.removeStrophe(lastStropheInsertId);
-                partitionDAO.DeletePartition(lastPartitionInsertId);
 
                 return JsonErrorBuilder.getJsonObject(
                         500,
-                        "Strophe positioned at " + newStrophe.getPosition() + " could not be created. Aborted.");
+                        "Strophe positioned at " + newStrophe.getPosition() + " could not be created. " +
+                                "Could not be aborted, DB might be in an inconsistent state.");
             }
 
             newStrophe.setId(lastStropheInsertId);
             JsonArray lignes = ((JsonObject) strophe).get("lignes").getAsJsonArray();
             int lastLigneInsertId = 0;
+            int lignePosition = 1;
             for(JsonElement ligne : lignes) {
                 Ligne newLigne = new Ligne();
                 newLigne.setAccord(((JsonObject)ligne).get("accord").getAsString());
                 newLigne.setText(((JsonObject)ligne).get("text").getAsString());
-                newLigne.setPosition(((JsonObject)ligne).get("position").getAsInt());
-
-                // FIXME no need to transmit new strophe since we have the lastStropheInsertId ??
+                newLigne.setPosition(lignePosition++);
                 lastLigneInsertId = ligneDAO.addLigne(newLigne, newStrophe);
                 if(lastLigneInsertId == 0) {
-                    // "rollback"
-                    // FIXME verify deletion status
-                    for(Strophe stropheToRemove : stropheDAO.getStrophes(newPartition)) {
-                        ligneDAO.removeLignes(stropheToRemove);
+                    if(rollbackAddPartition(newPartition)) {
+                        return JsonErrorBuilder.getJsonObject(
+                                500,
+                                "Ligne positioned at " + newLigne.getPosition() + " could not be created. Aborted.");
                     }
-                    stropheDAO.removeStrophe(lastStropheInsertId);
-                    partitionDAO.DeletePartition(lastPartitionInsertId);
 
                     return JsonErrorBuilder.getJsonObject(
                             500,
-                            "Ligne positioned at " + newLigne.getPosition() + " could not be created. Aborted.");
+                            "Ligne positioned at " + newLigne.getPosition() + " could not be created. " +
+                                    "Could not be aborted, DB might be in an inconsistent state.");
                 }
             }
         }
@@ -399,6 +395,26 @@ public class PartitionServiceImpl implements IPartitionService {
         jsonResponse = JsonErrorBuilder.getJsonObject(201, baseUrl + lastPartitionInsertId);
 
         return jsonResponse;
+    }
+
+    private boolean rollbackAddPartition(Partition partition) {
+        DAOFactory daoFactory = DAOFactory.getInstance();
+        IStropheDAO stropheDAO = daoFactory.getStropheDAO();
+        ILigneDAO ligneDAO = daoFactory.getLigneDAO();
+        IPartitionDAO partitionDAO = daoFactory.getPartitionDAO();
+        boolean deletionStatus = true;
+
+        for(Strophe stropheToRemove : stropheDAO.getStrophes(partition)) {
+            deletionStatus = deletionStatus && ligneDAO.removeLignes(stropheToRemove) > 0;
+        }
+        if(deletionStatus) {
+            deletionStatus = stropheDAO.removeStrophes(partition) > 0;
+        }
+        if(deletionStatus) {
+            deletionStatus = partitionDAO.DeletePartition(partition.getId()) > 0;
+        }
+
+        return deletionStatus;
     }
 
     private boolean isValidPartition(JsonObject jsonObj) {
@@ -422,11 +438,10 @@ public class PartitionServiceImpl implements IPartitionService {
         return isValid;
     }
 
-    // FIXME verify that position is integer
     private boolean isValidStrophe(JsonObject jsonObj) {
         boolean isValid =
                 jsonObj != null &&
-                jsonObj.has("position") &&
+                //jsonObj.has("position") &&
                 jsonObj.has("lignes") &&
                 jsonObj.get("lignes").isJsonArray();
         JsonArray lignes = jsonObj.get("lignes").getAsJsonArray();
@@ -437,11 +452,10 @@ public class PartitionServiceImpl implements IPartitionService {
         return isValid;
     }
 
-    // FIXME verify that position is integer
     private boolean isValidLigne(JsonObject jsonObj) {
         return  jsonObj != null &&
                 jsonObj.has("accord") &&
-                jsonObj.has("text") &&
-                jsonObj.has("position");
+                jsonObj.has("text");// &&
+                //jsonObj.has("position");
     }
 }
