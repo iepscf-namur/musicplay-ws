@@ -1,12 +1,14 @@
-##Swagger
+# MusicPlay WS API Documentation
 
-####Preview
+## Swagger
+
+#### Preview
 https://app.swaggerhub.com/apis-docs/iepscf/musicplay-ws
 
-####Documentation
+#### Documentation
 https://swagger.io/docs/specification/about
 
-####Yaml Content
+#### Yaml Content
 
 ```yaml
 openapi: 3.0.0
